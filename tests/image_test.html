@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+	<title>Image Controls Test</title>
+
+	<style>
+
+		body {
+			margin: 0px;
+			overflow: hidden;
+			touch-action: none;
+		}
+
+		#container {
+			margin: 0px;
+			position: absolute;
+			width: 700px;
+			height: 500px;
+			background: #000000;
+			overflow: hidden;
+		}
+
+		#fox {
+			margin: 0px;
+			position: absolute;
+		}
+
+	</style>
+
+<head>
+
+<body onload="init();">
+
+	<script src="../src/ImageControls.js"></script>
+
+	<script>
+		
+		/*
+		 * Simple example using image in a div tag. Refer to the styles. Position: absolute is required. Pass the image or parent tag to the controls with a 'fake' camera
+		 * This is desirable if you wish to use no outside dependencies like THREE.js
+		 */
+
+		var controls,
+			container,
+			camera,
+			image;
+
+		function init() {
+
+			container = document.getElementById("container");
+			image = document.getElementById("fox"); // either the single image or the parent container of all the images
+			camera = new IMAGE_CONTROLS.Camera(document.getElementById("camera"), image); // write a 'fake' camera
+			
+			controls = new IMAGE_CONTROLS.Controller({
+				camera: camera,
+				container: container
+			});
+
+			update();
+		}
+
+		function update() {
+			// this will update the controls and the camera
+			controls.update();
+
+			requestAnimationFrame(update);
+		}
+
+	</script>
+
+	<div id="container"> <!-- container for the entire area -->
+		<div id="camera"> <!-- div to represent the camera -->
+			<img src="../examples/images/smiling-fox.jpg" id="fox"> <!-- All the images go inside the camera div -->
+		</div>
+	</div>
+
+</body>
+
+</html>

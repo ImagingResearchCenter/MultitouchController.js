@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+	<title>WebGL Gallery (Single Image) Controls Test</title>
+
+	<style>
+
+		body {
+			margin: 0px;
+			overflow: hidden;
+			touch-action: none;
+		}
+
+	</style>
+
+<head>
+
+<body onload="init();">
+
+	<script src="../examples/Gallery.js"></script>
+	<script src="../src/ImageControls.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min.js"></script>
+
+	<script>
+
+		var gallery;
+	
+		function init() {
+			
+			var init_parameters = {
+				platform: "webgl",
+				container: document.getElementById("container")
+			}
+
+			var fox_parameters = {
+				image: "../examples/images/smiling-fox.jpg",
+			}
+
+			gallery = new GALLERY.Gallery(init_parameters);
+
+			gallery.add(fox_parameters);
+
+			update();
+		}
+
+		function update() {
+			gallery.update();
+
+			requestAnimationFrame(update);
+		}
+
+	</script>
+
+	<div id="container"></div>
+
+</body>
+
+</html>
