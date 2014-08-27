@@ -52,9 +52,9 @@
 
 			container = document.getElementById("container");
 			image = document.getElementById("fox"); // either the single image or the parent container of all the images
-			camera = new IMAGE_CONTROLS.Camera(document.getElementById("camera"), image); // write a 'fake' camera
+			camera = new MULTITOUCH_CONTROLLER.Camera(document.getElementById("camera"), image); // write a 'fake' camera
 			
-			controls = new IMAGE_CONTROLS.Controller({
+			controls = new MULTITOUCH_CONTROLLER.Controller({
 				camera: camera,
 				container: container
 			});
