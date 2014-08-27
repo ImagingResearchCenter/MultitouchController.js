@@ -50,6 +50,8 @@
 			container = document.getElementById("container");
 			image = document.getElementById("image"); // either the single image or the parent container of all the images
 			camera = new MULTITOUCH_CONTROLLER.Camera(document.getElementById("camera"), image); // write a 'fake' camera
+
+			image.width = 500; // it's a big image, so scrunch it down
 			
 			controls = new MULTITOUCH_CONTROLLER.Controller({
 				camera: camera,

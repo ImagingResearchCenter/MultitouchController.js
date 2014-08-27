@@ -22,6 +22,7 @@ MULTITOUCH_CONTROLLER.Controller = function(parameters) {
 	this.previous_press = new MULTITOUCH_CONTROLLER.Vector().zero(); // old press coordinates
 	this.ZERO = new MULTITOUCH_CONTROLLER.Vector().zero();
 
+	this.previous_time = 0;
 	this.pointer = false;
 	this.touch_count = 0;
 	this.touches = [];
@@ -231,7 +232,8 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 				}
 			}
 
-			console.log("Press move", event.clientX, event.clientY, event.target);
+			console.log("Press move", event.timeStamp);
+			_that.previous_time = event.timeStamp;
 		}
 	}
 	
@@ -259,11 +261,15 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 		if ((_that.pointer && (event.pointerType === "mouse" || (event.pointerType === "touch" && _that.touch_count === 0))) || (event.type === "mouseup" || (event.type === "touchend" && event.touches.length === 0))) {
 			_that.interacting = false;
 
-			_that.release.subVectors(_that.previous_press, _that.press); // set release speed
-			_that.release.y *= -1;
+			// this prevents the image from releasing if it has been held still
+			if (event.timeStamp - _that.previous_time < 17) {
+
+				_that.release.subVectors(_that.previous_press, _that.press); // set release speed
+				_that.release.y *= -1;
+			}
 		}
 
-		console.log("Press up", event.target);
+		console.log("Press up", _that.press, event.timeStamp);
 	}
 
 	/*
