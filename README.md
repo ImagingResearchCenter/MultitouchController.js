@@ -18,7 +18,7 @@ This sets up a simple picture container with only one image.
 
 <div id="container">
   <div id="camera">
-    <img src="examples/images/smiling-fox.jpg" id="image">
+    <img src="examples/images/subPic1.jpg" id="image">
   </div>
 </div>
 
