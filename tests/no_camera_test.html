@@ -10,12 +10,10 @@
 
 		body {
 			margin: 0px;
-			overflow: hidden;
 			touch-action: none;
 		}
 
 		#container {
-			margin: 0px;
 			position: absolute;
 			width: 700px;
 			height: 500px;
@@ -23,8 +21,7 @@
 			overflow: hidden;
 		}
 
-		#fox {
-			margin: 0px;
+		#image {
 			position: absolute;
 		}
 
@@ -49,9 +46,9 @@
 		function init() {
 
 			container = document.getElementById("container");
-			image = document.getElementById("fox"); // either the single image or the parent container of all the images
+			image = document.getElementById("image"); // either the single image or the parent container of all the images
 			
-			controls = new IMAGE_CONTROLS.Controller({
+			controls = new MULTITOUCH_CONTROLLER.Controller({
 				container: container
 			});
 
@@ -68,7 +65,7 @@
 	</script>
 
 	<div id="container"> <!-- container for the entire area -->
-		<img src="../examples/images/smiling-fox.jpg" id="fox"> <!-- All the images go inside the camera div -->
+		<img src="../examples/images/smiling-fox.jpg" id="image"> <!-- All the images go inside the camera div -->
 	</div>
 
 </body>
