@@ -1,6 +1,6 @@
-var MULTITOUCH_CONTROLS = MULTITOUCH_CONTROLS || {};
+var MULTITOUCH_CONTROLLER = MULTITOUCH_CONTROLLER || {};
 
-MULTITOUCH_CONTROLS.Controller = function(parameters) {
+MULTITOUCH_CONTROLLER.Controller = function(parameters) {
 
 	// camera is really the only necessity
 	if (parameters.camera === undefined) {
@@ -16,11 +16,11 @@ MULTITOUCH_CONTROLS.Controller = function(parameters) {
 	this.CAMERA_MAX = (this.fov) ? this.camera.fov : this.camera.position.z; // get the initial state of the z, will be the max. min is 0 implicitly
 
 	this.interacting = false;
-	this.pan = new MULTITOUCH_CONTROLS.Vector().zero(); // pan offset
-	this.release = new MULTITOUCH_CONTROLS.Vector().zero(); // release speed
-	this.press = new MULTITOUCH_CONTROLS.Vector().zero(); // current press coordinates
-	this.previous_press = new MULTITOUCH_CONTROLS.Vector().zero(); // old press coordinates
-	this.ZERO = new MULTITOUCH_CONTROLS.Vector().zero();
+	this.pan = new MULTITOUCH_CONTROLLER.Vector().zero(); // pan offset
+	this.release = new MULTITOUCH_CONTROLLER.Vector().zero(); // release speed
+	this.press = new MULTITOUCH_CONTROLLER.Vector().zero(); // current press coordinates
+	this.previous_press = new MULTITOUCH_CONTROLLER.Vector().zero(); // old press coordinates
+	this.ZERO = new MULTITOUCH_CONTROLLER.Vector().zero();
 
 	this.pointer = false;
 	this.touch_count = 0;
@@ -29,15 +29,15 @@ MULTITOUCH_CONTROLS.Controller = function(parameters) {
 	this.dist = 0;
 	this.createEvents(); // set up the event listeners
 
-	this.controls_camera = (this.camera instanceof MULTITOUCH_CONTROLS.Camera) ? true : false;
+	this.controls_camera = (this.camera instanceof MULTITOUCH_CONTROLLER.Camera) ? true : false;
 }
 
 /*
  * Check for updates
  */
-MULTITOUCH_CONTROLS.Controller.prototype.update = function() {
+MULTITOUCH_CONTROLLER.Controller.prototype.update = function() {
 
-	// if user is using an MULTITOUCH_CONTROLS.Camera
+	// if user is using an MULTITOUCH_CONTROLLER.Camera
 	if (this.controls_camera) {
 		this.camera.update();
 	}
@@ -51,7 +51,7 @@ MULTITOUCH_CONTROLS.Controller.prototype.update = function() {
 /*
  * Handle releasing animation
  */
-MULTITOUCH_CONTROLS.Controller.prototype.releasePress = function() {
+MULTITOUCH_CONTROLLER.Controller.prototype.releasePress = function() {
 
 	this.camera.position.x += this.release.x; // update release
 	this.camera.position.y += this.release.y;
@@ -66,7 +66,7 @@ MULTITOUCH_CONTROLS.Controller.prototype.releasePress = function() {
 /*
  * Set up all the event listeners
  */
-MULTITOUCH_CONTROLS.Controller.prototype.createEvents = function() {
+MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 
 	var _that = this; // preserve name space
 
@@ -76,7 +76,7 @@ MULTITOUCH_CONTROLS.Controller.prototype.createEvents = function() {
 	function onPressDown(event) {
 		event.preventDefault();
 
-		// if user is using an MULTITOUCH_CONTROLS.Camera
+		// if user is using an MULTITOUCH_CONTROLLER.Camera
 		if (_that.controls_camera && event.target !== _that.camera.camera) {
 			console.log("using camera", event.target.parentNode);
 			//onPressDown(event);
@@ -133,8 +133,8 @@ MULTITOUCH_CONTROLS.Controller.prototype.createEvents = function() {
 				_that.touch_count++; // increment touch count
 				_that.touch_change = true; // touches have changed
 
-				var _move = new MULTITOUCH_CONTROLS.Vector(),
-					_diff = new MULTITOUCH_CONTROLS.Vector();
+				var _move = new MULTITOUCH_CONTROLLER.Vector(),
+					_diff = new MULTITOUCH_CONTROLLER.Vector();
 
 				// offset for the new press location
 				for (var t = 0; t < _that.touch_count; t++) {
@@ -181,7 +181,7 @@ MULTITOUCH_CONTROLS.Controller.prototype.createEvents = function() {
 				if (t !== _that.touch_count) {
 					_that.touch_change = true;
 
-					var _diff = new MULTITOUCH_CONTROLS.Vector();
+					var _diff = new MULTITOUCH_CONTROLLER.Vector();
 
 					_diff.subVectors(_that.press, _that.previous_press);
 					_that.pan.add(_diff);
@@ -271,13 +271,13 @@ MULTITOUCH_CONTROLS.Controller.prototype.createEvents = function() {
 	 */
 	function onPinchZoom(pinch) {
 
-		var _current_dist = new MULTITOUCH_CONTROLS.Vector(),
+		var _current_dist = new MULTITOUCH_CONTROLLER.Vector(),
 			_total_dist = 0,
 			_delta = 0;
 
 		// calculate the current total distance
 		for (var t = 0; t < pinch.length; t++) {
-			_current_dist.subVectors(_that.press, new MULTITOUCH_CONTROLS.Vector(pinch[t].clientX, pinch[t].clientY));
+			_current_dist.subVectors(_that.press, new MULTITOUCH_CONTROLLER.Vector(pinch[t].clientX, pinch[t].clientY));
 			_total_dist += _current_dist.magnitude();
 		}
 
@@ -365,7 +365,7 @@ MULTITOUCH_CONTROLS.Controller.prototype.createEvents = function() {
 /*
  * 3-D Vector used to help calculations
  */
-MULTITOUCH_CONTROLS.Vector = function(x, y, z) {
+MULTITOUCH_CONTROLLER.Vector = function(x, y, z) {
 	
 	this.x = x || 0;
 	this.y = y || 0;
@@ -375,7 +375,7 @@ MULTITOUCH_CONTROLS.Vector = function(x, y, z) {
 /*
  * Prototype for the vector
  */
-MULTITOUCH_CONTROLS.Vector.prototype = {
+MULTITOUCH_CONTROLLER.Vector.prototype = {
 
 	// calculate the magnitude
 	magnitude: function() {
@@ -474,7 +474,7 @@ MULTITOUCH_CONTROLS.Vector.prototype = {
 /*
  * Fake camera prototype to help users out
  */
-MULTITOUCH_CONTROLS.Camera = function(camera, container, zoom) {
+MULTITOUCH_CONTROLLER.Camera = function(camera, container, zoom) {
 
 	// camera container and the image container
 	this.camera = camera;
@@ -483,7 +483,7 @@ MULTITOUCH_CONTROLS.Camera = function(camera, container, zoom) {
 	// set the position vector and the style and transforms
 	this.init_zoom = zoom || 600;
 	this.scale = 1;
-	this.position = new MULTITOUCH_CONTROLS.Vector(0, 0, this.init_zoom);
+	this.position = new MULTITOUCH_CONTROLLER.Vector(0, 0, this.init_zoom);
 	this.camera.style.position = "absolute";
 	this.camera.style.width = "inherit";
 	this.camera.style.height = "inherit";
@@ -497,7 +497,7 @@ MULTITOUCH_CONTROLS.Camera = function(camera, container, zoom) {
 /*
  * Camera operations
  */
-MULTITOUCH_CONTROLS.Camera.prototype = {
+MULTITOUCH_CONTROLLER.Camera.prototype = {
 
 	// update the images and the camera zoom
 	update: function() {
