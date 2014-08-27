@@ -83,7 +83,6 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 			//onPressDown(event);
 			var _cache = event;
 			_cache.target = event.target.parentNode;
-			console.log(_cache.target);
 		}
 
 		// if not interacting
@@ -124,7 +123,7 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 			_that.release.zero(); // release is zeroed out
 			_that.previous_press.copy(_that.press);
 
-			console.log("press down", event.target);
+			console.log("DOWN", _that.camera.position.x, _that.camera.position.y);
 		} else {
 
 			// if adding pointer touches
@@ -219,9 +218,21 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 				}
 			}
 
+			var _scale = (_that.CAMERA_MAX / _that.camera.position.z);
+
+			var _new_pos = new MULTITOUCH_CONTROLLER.Vector(),
+				_delta_pos = new MULTITOUCH_CONTROLLER.Vector();
+
+			_new_pos.x = (_that.pan.x - _that.press.x);
+			_new_pos.y = (_that.press.y - _that.pan.y);
+
+			_delta_pos.x = (_new_pos.x - _that.camera.position.x);
+			_delta_pos.y = (_new_pos.y - _that.camera.position.y);
+			_delta_pos.divide(_scale);
+			console.log(_scale, _delta_pos.x, _delta_pos.y);
+
 			// set camera position
-			_that.camera.position.x = _that.pan.x - _that.press.x;
-			_that.camera.position.y = _that.press.y - _that.pan.y;
+			_that.camera.position.add(_delta_pos);
 
 			// check for a pinch zoom
 			if (_that.touch_count >= 2) {
@@ -232,7 +243,6 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 				}
 			}
 
-			console.log("Press move", event.timeStamp);
 			_that.previous_time = event.timeStamp;
 		}
 	}
@@ -261,15 +271,14 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 		if ((_that.pointer && (event.pointerType === "mouse" || (event.pointerType === "touch" && _that.touch_count === 0))) || (event.type === "mouseup" || (event.type === "touchend" && event.touches.length === 0))) {
 			_that.interacting = false;
 
-			// this prevents the image from releasing if it has been held still
-			if (event.timeStamp - _that.previous_time < 17) {
+			// this prevents the image from releasing if it has been held still, should be 1 frame at 30fps, 2 at 60 fps
+			if (event.timeStamp - _that.previous_time < 35) {
 
 				_that.release.subVectors(_that.previous_press, _that.press); // set release speed
 				_that.release.y *= -1;
 			}
 		}
 
-		console.log("Press up", _that.press, event.timeStamp);
 	}
 
 	/*
@@ -298,16 +307,7 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 		// update current distance to remember
 		_that.dist = _total_dist;
 
-		if (_that.fov) {
-			_that.camera.fov -= _delta / 5;
-		} else {
-			_that.camera.position.z -= _delta;
-
-			if (_that.camera.position.z < 50) {
-				console.log("too much");
-				_that.camera.position.z += (_delta * 0.5);
-			}
-		}
+		boundZoom(_delta);
 	}
 
 	/*
@@ -332,17 +332,24 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 			_delta = event.detail;
 		}
 
+		boundZoom(_delta);
+	}
+
+	/*
+	 * Bounds the zoom level
+	 */
+	function boundZoom(delta) {
+
 		if (_that.fov) {
-			_that.camera.fov -= _delta;
+			_that.camera.fov -= delta;
 			if (_that.camera.fov < 0.1) {
 				_that.camera.fov = 0.1;
 			}
 		} else {
-			_that.camera.position.z -= _delta;
+			_that.camera.position.z -= delta;
 
-			if (_that.camera.position.z < 100) {
-				console.log("too much");
-				_that.camera.position.z += (_delta * 0.5);
+			if (_that.camera.position.z < 200) {
+				_that.camera.position.z = 200;
 			}
 		}
 	}
