@@ -17,6 +17,7 @@ MULTITOUCH_CONTROLLER.Controller = function(parameters) {
 
 	this.interacting = false;
 	this.pan = new MULTITOUCH_CONTROLLER.Vector().zero(); // pan offset
+	this.previous_pan = new MULTITOUCH_CONTROLLER.Vector().zero();
 	this.release = new MULTITOUCH_CONTROLLER.Vector().zero(); // release speed
 	this.press = new MULTITOUCH_CONTROLLER.Vector().zero(); // current press coordinates
 	this.previous_press = new MULTITOUCH_CONTROLLER.Vector().zero(); // old press coordinates
@@ -220,19 +221,32 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 
 			var _scale = (_that.CAMERA_MAX / _that.camera.position.z);
 
+			if (!_that.previous_pan.equals(_that.ZERO)) {
+				var _diff = new MULTITOUCH_CONTROLLER.Vector().subVectors(_that.pan, _that.press);
+				console.log("==== diff ====", _diff.x);
+				_that.pan.x += _diff.x;
+
+				_that.previous_pan.zero();
+
+				//_delta_pos.x -= _diff.x / _scale;
+				//_delta_pos.sub(_diff);
+			}
+
 			var _new_pos = new MULTITOUCH_CONTROLLER.Vector(),
 				_delta_pos = new MULTITOUCH_CONTROLLER.Vector();
 
 			_new_pos.x = (_that.pan.x - _that.press.x);
-			_new_pos.y = (_that.press.y - _that.pan.y);
+			//_new_pos.y = (_that.press.y - _that.pan.y);
+			_new_pos.divide(_scale);
 
 			_delta_pos.x = (_new_pos.x - _that.camera.position.x);
-			_delta_pos.y = (_new_pos.y - _that.camera.position.y);
-			_delta_pos.divide(_scale);
-			console.log(_scale, _delta_pos.x, _delta_pos.y);
+			//_delta_pos.y = (_new_pos.y - _that.camera.position.y);
+			//_delta_pos.divide(_scale);
 
 			// set camera position
 			_that.camera.position.add(_delta_pos);
+
+			console.log(_scale, _delta_pos.x, _that.camera.position.x, _that.press.x, _that.pan.x);
 
 			// check for a pinch zoom
 			if (_that.touch_count >= 2) {
@@ -270,6 +284,7 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 		// if mouse up or ALL touches are completed
 		if ((_that.pointer && (event.pointerType === "mouse" || (event.pointerType === "touch" && _that.touch_count === 0))) || (event.type === "mouseup" || (event.type === "touchend" && event.touches.length === 0))) {
 			_that.interacting = false;
+			_that.previous_pan.copy(_that.pan);
 
 			// this prevents the image from releasing if it has been held still, should be 1 frame at 30fps, 2 at 60 fps
 			if (event.timeStamp - _that.previous_time < 35) {
@@ -516,8 +531,8 @@ MULTITOUCH_CONTROLLER.Camera.prototype = {
 	update: function() {
 
 		// move the images for panning action
-		this.container.style.left = -this.position.x + 'px';
-		this.container.style.top = this.position.y + 'px';
+		this.container.style.left = -this.position.x + "px";
+		this.container.style.top = this.position.y + "px";
 
 		// check zoom and scale
 		var _zoom = this.init_zoom / this.position.z;
