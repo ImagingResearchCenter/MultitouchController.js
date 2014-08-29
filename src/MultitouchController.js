@@ -132,8 +132,6 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 
 			_that.release.zero(); // release is zeroed out
 			_that.previous_press.copy(_that.press);
-
-			console.log("DOWN", _that.camera.position.x, _that.camera.position.y);
 		} else {
 
 			// if adding pointer touches
@@ -525,8 +523,6 @@ MULTITOUCH_CONTROLLER.Camera.prototype = {
 		// move the images for panning action
 		this.container.style.left = -this.position.x + "px";
 		this.container.style.top = this.position.y + "px";
-
-		console.log(this.scale, this.container.style.left, this.container.style.top);
 	},
 
 	/*
