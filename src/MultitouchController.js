@@ -16,12 +16,14 @@ MULTITOUCH_CONTROLLER.Controller = function(parameters) {
 	this.CAMERA_MAX = (this.fov) ? this.camera.fov : this.camera.position.z; // get the initial state of the z, will be the max. min is 0 implicitly
 
 	this.interacting = false;
+	this.pos = new MULTITOUCH_CONTROLLER.Vector().copy(this.camera.position); // camera pos
 	this.pan = new MULTITOUCH_CONTROLLER.Vector().zero(); // pan offset
 	this.release = new MULTITOUCH_CONTROLLER.Vector().zero(); // release speed
 	this.press = new MULTITOUCH_CONTROLLER.Vector().zero(); // current press coordinates
 	this.previous_press = new MULTITOUCH_CONTROLLER.Vector().zero(); // old press coordinates
 	this.ZERO = new MULTITOUCH_CONTROLLER.Vector().zero();
 
+	this.scale = 1;
 	this.previous_time = 0;
 	this.pointer = false;
 	this.touch_count = 0;
@@ -37,13 +39,6 @@ MULTITOUCH_CONTROLLER.Controller = function(parameters) {
  * Check for updates
  */
 MULTITOUCH_CONTROLLER.Controller.prototype.update = function() {
-
-	// calculate zoom to adjust panning at different zoom levels
-	var _zoom = this.CAMERA_MAX / this.camera.position.z;
-
-	this.camera.position.x /= _zoom;
-	this.camera.position.y /= _zoom;
-
 	// if user is using an MULTITOUCH_CONTROLLER.Camera
 	if (this.controls_camera) {
 		this.camera.update();
@@ -53,10 +48,6 @@ MULTITOUCH_CONTROLLER.Controller.prototype.update = function() {
 	if (!this.release.equals(this.ZERO) && !this.interacting) {
 		this.releasePress();
 	}
-
-	// reset the camera
-	this.camera.position.x *= _zoom;
-	this.camera.position.y *= _zoom;
 }
 
 /*
@@ -64,8 +55,8 @@ MULTITOUCH_CONTROLLER.Controller.prototype.update = function() {
  */
 MULTITOUCH_CONTROLLER.Controller.prototype.releasePress = function() {
 
-	this.camera.position.x += this.release.x; // update release
-	this.camera.position.y += this.release.y;
+	this.pos.x = this.camera.position.x += this.release.x; // update release
+	this.pos.y = this.camera.position.y += this.release.y;
 	this.release.multiply(0.9); // slow down release speed
 
 	// if release is really slow, zero it out
@@ -126,9 +117,9 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 				}
 			}
 
-			_that.camera.position.y *= -1;
-			_that.pan.addVectors(_that.press, _that.camera.position); // pan holds your current location
-			_that.camera.position.y *= -1;
+			_that.pos.y *= -1;
+			_that.pan.addVectors(_that.press, _that.pos); // pan holds your current location
+			_that.pos.y *= -1;
 
 			_that.release.zero(); // release is zeroed out
 			_that.previous_press.copy(_that.press);
@@ -226,8 +217,27 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 				}
 			}
 
-			_that.camera.position.x = (_that.pan.x - _that.press.x);
-			_that.camera.position.y = (_that.press.y - _that.pan.y);
+			// get delta to new location
+			var _delta = new MULTITOUCH_CONTROLLER.Vector(),
+				_new_pos = new MULTITOUCH_CONTROLLER.Vector();
+
+			_that.scale = _that.CAMERA_MAX / _that.camera.position.z;
+
+			// new position
+			_new_pos.x = (_that.pan.x - _that.press.x);
+			_new_pos.y = (_that.press.y - _that.pan.y);
+
+			// difference
+			_delta.x = _new_pos.x - _that.pos.x;
+			_delta.y = _new_pos.y - _that.pos.y;
+			
+			// position without the scale
+			_that.pos.x += _delta.x;
+			_that.pos.y += _delta.y;
+
+			// camera with the scale
+			_that.camera.position.x += _delta.x / _that.scale;
+			_that.camera.position.y += _delta.y / _that.scale;
 
 			// check for a pinch zoom
 			if (_that.touch_count >= 2) {
@@ -269,7 +279,7 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 			// this prevents the image from releasing if it has been held still, should be 1 frame at 30fps, 2 at 60 fps
 			if (event.timeStamp - _that.previous_time < 35) {
 
-				_that.release.subVectors(_that.previous_press, _that.press); // set release speed
+				_that.release.subVectors(_that.previous_press, _that.press).divide(_that.scale); // set release speed
 				_that.release.y *= -1;
 			}
 		}
@@ -347,6 +357,8 @@ MULTITOUCH_CONTROLLER.Controller.prototype.createEvents = function() {
 				_that.camera.position.z = 200;
 			}
 		}
+
+		_that.pos.z = _that.camera.position.z;
 	}
 
 	// set up the event listeners
